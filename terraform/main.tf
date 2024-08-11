@@ -55,6 +55,35 @@ module "eks" {
   enable_cluster_creator_admin_permissions = true
 }
 
+# Create KMS Key
+resource "aws_kms_key" "this" {
+  description = "KMS key for EKS cluster"
+  key_usage   = "ENCRYPT_DECRYPT"
+  tags = {
+    Name = "eks-sockShop-key"
+  }
+}
+
+# Create KMS Alias
+resource "aws_kms_alias" "this" {
+  name          = "alias/eks/sockShop"
+  target_key_id = aws_kms_key.this.id
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+# Create CloudWatch Logs Log Group
+resource "aws_cloudwatch_log_group" "this" {
+  name              = "/aws/eks/sockShop/cluster"
+  retention_in_days = 7
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
 
 
 
