@@ -1,0 +1,51 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sockshop-ingress
+  namespace: sock-shop
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: king-issuer
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: sock.kahmanny.pro
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: front-end
+                port:
+                  number: 80
+
+ #   - host: grafana.kahmanny.pro
+  #    http:
+   #     paths:
+    #      - pathType: Prefix
+     #       path: /
+      #      backend:
+       #       service:
+        #        name: prometheus-grafana
+         #       port:
+          #        number: 80
+
+    #- host: prometheus.kahmanny.pro
+     # http:
+      #  paths:
+       #   - pathType: Prefix
+        #    path: /
+         #   backend:
+          #    service:
+           #     name: prometheus-kube-prometheus-prometheus
+            #    port:
+             #     number: 9090
+
+  tls:
+    - hosts:
+        - sock.kahmanny.pro
+     #   - grafana.kahmanny.pro
+    #    - prometheus.kahmanny.pro
+      secretName: king-secret
+
