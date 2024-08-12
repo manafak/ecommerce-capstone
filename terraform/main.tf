@@ -55,8 +55,14 @@ module "eks" {
   enable_cluster_creator_admin_permissions = true
 }
 
-# Create KMS Key
+# Data source to reference existing KMS Key
+data "aws_kms_key" "existing" {
+  key_id = "arn:aws:kms:us-east-1:471112842003:key/YOUR_KMS_KEY_ID" # Replace with your actual KMS Key ID
+}
+
+# Create KMS Key if it does not exist
 resource "aws_kms_key" "this" {
+  count       = length(data.aws_kms_key.existing.key_id) == 0 ? 1 : 0
   description = "KMS key for EKS cluster"
   key_usage   = "ENCRYPT_DECRYPT"
   tags = {
@@ -64,25 +70,33 @@ resource "aws_kms_key" "this" {
   }
 }
 
-# Create KMS Alias
+# Create KMS Alias if it does not exist
 resource "aws_kms_alias" "this" {
-  name          = "alias/eks/sockShop"
-  target_key_id = aws_kms_key.this.id
+  count          = length(data.aws_kms_key.existing.key_id) == 0 ? 1 : 0
+  name           = "alias/eks/sockShop"
+  target_key_id  = aws_kms_key.this.id
 
   lifecycle {
     create_before_destroy = true
   }
 }
 
-# Create CloudWatch Logs Log Group
+# Data source to reference existing CloudWatch Log Group
+data "aws_cloudwatch_log_group" "existing" {
+  name = "/aws/eks/sockShop/cluster"
+}
+
+# Create CloudWatch Logs Log Group if it does not exist
 resource "aws_cloudwatch_log_group" "this" {
-  name              = "/aws/eks/sockShop/cluster"
-  retention_in_days = 7
+  count              = length(data.aws_cloudwatch_log_group.existing.name) == 0 ? 1 : 0
+  name               = "/aws/eks/sockShop/cluster"
+  retention_in_days  = 7
 
   lifecycle {
     create_before_destroy = true
   }
 }
+
 
 
 
