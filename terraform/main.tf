@@ -31,17 +31,27 @@ terraform {
   }
 }
 
-# Attempt to look up the existing KMS alias
 data "aws_kms_alias" "existing" {
   name = "alias/eks/sockShop"
 }
 
-# Conditional creation of the KMS alias
+# Option 1: Define a new KMS key
+#resource "aws_kms_key" "eks_key" {
+ # description          = "KMS key for EKS Cluster sockShop"
+#  enable_key_rotation  = true
+#}
+
+# Option 2: Use an existing KMS key (uncomment this block if using an existing key)
+ data "aws_kms_key" "existing" {
+   key_id = "14c7df77-54a3-46d0-98f1-4d88692bd0e8"
+ }
+
 resource "aws_kms_alias" "this" {
   count = data.aws_kms_alias.existing.id == "" ? 1 : 0
 
   name          = "alias/eks/sockShop"
-  target_key_id = aws_kms_key.eks_key.id  # Ensure you have a KMS key resource or ID here
+  #target_key_id = aws_kms_key.eks_key.id  # Use this if creating a new key
+   target_key_id = data.aws_kms_key.existing.id  # Use this if using an existing key
 }
 
 module "eks" {
@@ -85,4 +95,3 @@ module "eks" {
   # To add the current caller identity as an administrator
   enable_cluster_creator_admin_permissions = true
 }
-
