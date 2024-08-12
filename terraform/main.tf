@@ -22,10 +22,27 @@ module "vpc" {
   }
 }
 
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.61.0"
+    }
+  }
+}
+
+# Attempt to look up the existing KMS alias
 data "aws_kms_alias" "existing" {
   name = "alias/eks/sockShop"
 }
 
+# Conditional creation of the KMS alias
+resource "aws_kms_alias" "this" {
+  count = data.aws_kms_alias.existing.id == "" ? 1 : 0
+
+  name          = "alias/eks/sockShop"
+  target_key_id = aws_kms_key.eks_key.id  # Ensure you have a KMS key resource or ID here
+}
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
