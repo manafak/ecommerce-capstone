@@ -74,7 +74,7 @@ resource "aws_kms_key" "this" {
 resource "aws_kms_alias" "this" {
   count          = length(data.aws_kms_alias.existing.name) == 0 ? 1 : 0
   name           = "alias/eks/sockShop"
-  target_key_id  = aws_kms_key.this.id
+  target_key_id  = aws_kms_key.this[0].id # Accessing the key using count.index
 
   lifecycle {
     create_before_destroy = true
@@ -96,10 +96,3 @@ resource "aws_cloudwatch_log_group" "this" {
     create_before_destroy = true
   }
 }
-
-
-
-
-
-
-
