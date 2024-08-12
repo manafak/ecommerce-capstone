@@ -55,14 +55,14 @@ module "eks" {
   enable_cluster_creator_admin_permissions = true
 }
 
-# Data source to reference existing KMS Key
-data "aws_kms_key" "existing" {
-  key_id = "arn:aws:kms:us-east-1:471112842003:key/YOUR_KMS_KEY_ID" # Replace with your actual KMS Key ID
+# Data source to reference existing KMS Key Alias
+data "aws_kms_alias" "existing" {
+  name = "alias/eks/sockShop" # The alias name you're querying
 }
 
 # Create KMS Key if it does not exist
 resource "aws_kms_key" "this" {
-  count       = length(data.aws_kms_key.existing.key_id) == 0 ? 1 : 0
+  count       = length(data.aws_kms_alias.existing.name) == 0 ? 1 : 0
   description = "KMS key for EKS cluster"
   key_usage   = "ENCRYPT_DECRYPT"
   tags = {
@@ -72,7 +72,7 @@ resource "aws_kms_key" "this" {
 
 # Create KMS Alias if it does not exist
 resource "aws_kms_alias" "this" {
-  count          = length(data.aws_kms_key.existing.key_id) == 0 ? 1 : 0
+  count          = length(data.aws_kms_alias.existing.name) == 0 ? 1 : 0
   name           = "alias/eks/sockShop"
   target_key_id  = aws_kms_key.this.id
 
@@ -96,6 +96,7 @@ resource "aws_cloudwatch_log_group" "this" {
     create_before_destroy = true
   }
 }
+
 
 
 
