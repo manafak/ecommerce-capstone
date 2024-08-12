@@ -25,6 +25,14 @@ module "vpc" {
     
 }
 
+data "aws_kms_alias" "existing" {
+  name = "alias/eks/sockShop"
+}
+
+resource "aws_kms_alias" "this" {
+  name          = data.aws_kms_alias.existing.name
+  target_key_id = data.aws_kms_alias.existing.target_key_id
+}
 
 
 
