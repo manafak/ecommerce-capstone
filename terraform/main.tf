@@ -22,6 +22,11 @@ module "vpc" {
   }
 }
 
+# Data block to fetch the existing KMS key alias
+data "aws_kms_alias" "existing" {
+  name = "alias/eks/sockShop"
+}
+
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "~> 20.0"
@@ -32,6 +37,9 @@ module "eks" {
 
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
+
+  # Reference the existing KMS key ID
+  kms_key_id = data.aws_kms_alias.existing.target_key_id
 
   # EKS Managed Node Group(s)
   eks_managed_node_group_defaults = {
